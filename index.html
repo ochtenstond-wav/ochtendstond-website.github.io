@@ -15,9 +15,9 @@
     <a href="#top" class="logo">Ochtendstond.WAV</a>
 
     <nav class="nav-links" aria-label="Hoofdnavigatie">
-      <a href="#work">Werk</a>
+      <a href="#work">Work</a>
       <a href="#intake">Intake</a>
-      <a href="#about">Over mij</a>
+      <a href="#about">About</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
@@ -28,14 +28,13 @@
         <p class="eyebrow">CINEMATIC VISUALS</p>
 
         <h1>
-          Creatieve Visuals<br>
-          met <span>diepte</span>,<br>
-          sfeer & betekenis
+          Modern visuals<br>
+          with <span>emotion</span>,<br>
+          energy & atmosphere.
         </h1>
 
         <p class="hero-desc">
-          Ik ben Ebben, ik ben veel bezig met het zoeken naar nieuwe dingen, ik ben sinds jongs af aan al zeer gepassioneerd rondom alles dat met camera's te maken heeft,
-          ik zoek naar sterke visuals, sfeer en natuurlijk een beetje storytelling.
+          Ik ben Ebben, videograaf met een passie voor sterke visuals, sfeer en storytelling.
           Van events en fashion tot artiesten en social content — ik maak video's komende uit eigen intresses.
         </p>
 
@@ -105,15 +104,15 @@
             <span id="step-label">Stap 1 van 4 — Project</span>
           </div>
 
-          <form id="client-form" action="https://api.web3forms.com/submit" method="POST">
-            <input type="hidden" name="access_key" value="9f2c2885-15f3-461a-8ddc-b96e928f8bb9">
-            <input type="hidden" name="redirect" id="redirectUrl">
-            <input type="hidden" name="subject" id="mailSubject">
-            <input type="hidden" name="from_name" value="Ochtendstond.WAV Website">
-            <input type="hidden" name="replyto" id="mailReplyTo">
-            <input type="hidden" name="name" id="web3Name">
-            <textarea name="message" id="web3Message" style="display:none"></textarea>
-
+<form id="client-form" action="https://api.web3forms.com/submit" method="POST">
+  <input type="hidden" name="access_key" value="9f2c2885-15f3-461a-8ddc-b96e928f8bb9">
+  <input type="hidden" name="redirect" id="redirectUrl">
+  <input type="hidden" name="subject" id="mailSubject">
+  <input type="hidden" name="from_name" value="Ochtendstond.WAV Website">
+  <input type="hidden" name="replyto" id="mailReplyTo">
+  <input type="hidden" name="name" id="web3Name">
+  <textarea name="message" id="web3Message" style="display:none"></textarea>
+          
             <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
             <input type="hidden" name="Geselecteerde doelen" id="mailGoals">
             <input type="hidden" name="Geselecteerde sfeer" id="mailStyles">
@@ -260,39 +259,44 @@
           <div id="breakdown-output" class="breakdown-output hidden"></div>
         </div>
 
-        <div id="dashboard-panel" class="panel">
-          <div id="dashboard-lock" class="empty-state">
-            <i class="ti ti-lock"></i>
-            <p>Vul het host-wachtwoord in om lopende projecten te bekijken.</p>
-            <label>
-              Dashboard wachtwoord
-              <input id="dashboardPassword" type="password" autocomplete="current-password" placeholder="Wachtwoord">
-            </label>
-            <p id="dashboardError" class="muted"></p>
-            <button class="btn btn-primary" type="button" id="unlockDashboard">Dashboard openen</button>
-          </div>
+       <div id="dashboard-panel" class="panel">
+  <div id="dashboard-lock" class="empty-state">
+    <i class="ti ti-lock"></i>
+    <p>Vul het host-wachtwoord in om lopende projecten te bekijken.</p>
+    <label>
+      Dashboard wachtwoord
+      <input id="dashboardPassword" type="password" autocomplete="current-password" placeholder="Wachtwoord">
+    </label>
+    <p id="dashboardError" class="muted"></p>
+    <button class="btn btn-primary" type="button" id="unlockDashboard">Dashboard openen</button>
+  </div>
 
-          <div id="dashboard-content" class="hidden">
-            <div class="metrics">
-              <div class="metric">
-                <span>Actieve projecten</span>
-                <strong id="metric-active">0</strong>
-              </div>
-              <div class="metric">
-                <span>Ingediend</span>
-                <strong id="metric-total">0</strong>
-              </div>
-              <div class="metric">
-                <span>Eerstvolgende shoot</span>
-                <strong id="metric-next">—</strong>
-              </div>
-            </div>
+  <div id="dashboard-content" class="hidden">
+    <div class="metrics">
+      <div class="metric">
+        <span>Actieve projecten</span>
+        <strong id="metric-active">0</strong>
+      </div>
+      <div class="metric">
+        <span>Ingediend</span>
+        <strong id="metric-total">0</strong>
+      </div>
+      <div class="metric">
+        <span>Eerstvolgende shoot</span>
+        <strong id="metric-next">—</strong>
+      </div>
+    </div>
 
-            <div id="project-list" class="project-list">
-              <p class="muted">Nog geen projecten. Vul eerst de intake in.</p>
-            </div>
+    <div id="project-list" class="project-list">
+      <p class="muted">Nog geen projecten. Vul eerst de intake in.</p>
+    </div>
 
-            <div id="project-detail" class="breakdown-output hidden"></div>
+    <div id="project-detail" class="breakdown-output hidden"></div>
+  </div>
+</div>
+
+          <div id="project-list" class="project-list">
+            <p class="muted">Nog geen projecten. Vul eerst de intake in.</p>
           </div>
         </div>
       </div>
@@ -328,7 +332,7 @@
     <p>© <span id="year"></span> Ebben Dassonville — Cinematic Storytelling</p>
   </footer>
 
-  <iframe name="sheet-submit-frame" class="hidden" title="Project database submission"></iframe>
-  <script src="script.js"></script>
+<iframe name="sheet-submit-frame" class="hidden" title="Project database submission"></iframe>
+<script src="script.js"></script>
 </body>
 </html>
