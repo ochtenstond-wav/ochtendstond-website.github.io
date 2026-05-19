@@ -422,7 +422,6 @@ function renderDashboard() {
   if (!dashboardPassword) return;
 
   const activeProjects = state.projects.filter((project) => project.status !== "Afgewerkt");
-  const completedProjects = state.projects.filter((project) => project.status === "Afgewerkt");
   document.getElementById("metric-active").textContent = activeProjects.length;
   document.getElementById("metric-total").textContent = state.projects.length;
   document.getElementById("metric-next").textContent = activeProjects[0]?.shootDate || "—";
@@ -435,55 +434,21 @@ function renderDashboard() {
     return;
   }
 
-  list.innerHTML = `
-    ${projectGroup("Lopende projecten", activeProjects, false)}
-    ${projectGroup("Afgeronde projecten", completedProjects, true)}
-  `;
-
-  list.querySelectorAll(".project-row").forEach((row) => {
-    row.addEventListener("click", () => renderProjectDetail(row.dataset.projectId));
-  });
-
-  const selectedExists = state.projects.some((project) => project.id === state.selectedProjectId);
-  const fallbackProject = activeProjects[0] || completedProjects[0];
-
-  if (!selectedExists && fallbackProject) {
-    state.selectedProjectId = fallbackProject.id;
-  }
-
-  renderProjectDetail(state.selectedProjectId);
-}
-
-function projectGroup(title, projects, isCompleted) {
-  if (!projects.length) {
-    return "";
-  }
-
-  return `
-    <div class="breakdown-card">
-      <div class="breakdown-header">
-        <i class="${isCompleted ? "ti ti-check" : "ti ti-progress"}"></i>
-        <h3>${title}</h3>
-      </div>
-      <div class="breakdown-body project-list">
-        ${projects.map((project) => projectRow(project, isCompleted)).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function projectRow(project, isCompleted) {
-  const selected = project.id === state.selectedProjectId;
-
-  return `
-    <article class="project-row ${isCompleted ? "project-row-completed" : ""} ${selected ? "project-row-active" : ""}" data-project-id="${escapeHtml(project.id)}">
+  list.innerHTML = state.projects.map((project) => `
+    <article class="project-row" data-project-id="${escapeHtml(project.id)}">
       <span class="status">${escapeHtml(project.status)}</span>
       <div class="project-info">
         <strong>${escapeHtml(project.projectName)}</strong>
         <span>${escapeHtml(project.clientName)} · deadline: ${escapeHtml(project.deadline)}</span>
       </div>
     </article>
-  `;
+  `).join("");
+
+  list.querySelectorAll(".project-row").forEach((row) => {
+    row.addEventListener("click", () => renderProjectDetail(row.dataset.projectId));
+  });
+
+  renderProjectDetail(state.selectedProjectId || state.projects[0].id);
 }
 
 function renderProjectDetail(projectId) {
@@ -525,10 +490,6 @@ function completeProject(projectId) {
     done: true
   }));
 
-  project.status = "Afgewerkt";
-  project.checklist = completedChecklist;
-  renderDashboard();
-
   submitHiddenPost({
     action: "updateChecklist",
     password: dashboardPassword,
@@ -553,4 +514,24 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+.project-row-active {
+  border-color: var(--accent);
+  background: rgba(139, 125, 255, 0.14);
+}
+
+.project-row-completed {
+  opacity: 0.48;
+  filter: grayscale(1);
+}
+
+.project-row-completed .status {
+  color: #d7d7d7;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#completeProjectBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
