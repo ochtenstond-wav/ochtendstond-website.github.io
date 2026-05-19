@@ -651,3 +651,15 @@ textarea {
   content: "✓ ";
   font-weight: 700;
 }
+
+.option.selected {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
+}
+
+.option.selected::before {
+  content: "✓ ";
+  font-weight: 700;
+}
