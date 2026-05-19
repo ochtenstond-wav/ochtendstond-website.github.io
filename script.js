@@ -1,23 +1,29 @@
 console.log("EBBEN VISUALS ACTIVE");
 
+const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec";
+
+let dashboardPassword = "";
+let isSubmittingToWeb3Forms = false;
+
 const state = {
   step: 0,
   totalSteps: 4,
-  projects: JSON.parse(localStorage.getItem("ebbenProjects") || "[]"),
+  projects: [],
   selected: {
     goals: [],
     styles: [],
     formats: []
   },
   latestBreakdown: null,
-  latestInput: null
+  latestInput: null,
+  selectedProjectId: null
 };
 
 const stepNames = ["Project", "Stijl", "Locatie & timing", "Deliverables"];
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("year").textContent = new Date().getFullYear();
-  document.getElementById("nextUrl").value = makeThanksUrl();
+  document.getElementById("redirectUrl").value = makeThanksUrl();
 
   document.querySelectorAll(".tab").forEach((button) => {
     button.addEventListener("click", () => openTab(button.dataset.tab));
@@ -47,6 +53,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("backBtn").addEventListener("click", previousStep);
   document.getElementById("nextBtn").addEventListener("click", nextStep);
+  document.getElementById("client-form").addEventListener("submit", handleFormSubmit);
+  document.getElementById("unlockDashboard").addEventListener("click", unlockDashboard);
+  document.getElementById("dashboardPassword").addEventListener("keydown", (event) => {
+    if (event.key === "Enter") unlockDashboard();
+  });
 
   renderStep();
   renderDashboard();
@@ -61,6 +72,10 @@ function openTab(tabId) {
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
   document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabId));
   document.getElementById(tabId).classList.add("active");
+
+  if (tabId === "dashboard-panel") {
+    renderDashboard();
+  }
 }
 
 function renderStep() {
@@ -83,6 +98,18 @@ function renderStep() {
     state.step === state.totalSteps - 1 ? "Verzend projectaanvraag →" : "Volgende →";
 }
 
+function handleFormSubmit(event) {
+  if (isSubmittingToWeb3Forms) return;
+  event.preventDefault();
+
+  if (state.step < state.totalSteps - 1) {
+    nextStep();
+    return;
+  }
+
+  submitProjectRequest();
+}
+
 function nextStep() {
   if (state.step === 0 && !validateRequired(["clientName", "clientEmail", "projectIdea"])) return;
 
@@ -92,11 +119,18 @@ function nextStep() {
     return;
   }
 
+  submitProjectRequest();
+}
+
+function submitProjectRequest() {
   generateBreakdown();
   fillMailFields();
-  saveProject(state.latestBreakdown, state.latestInput);
-  renderDashboard();
-  document.getElementById("client-form").submit();
+  postProjectToSheet();
+
+  setTimeout(() => {
+    isSubmittingToWeb3Forms = true;
+    document.getElementById("client-form").submit();
+  }, 700);
 }
 
 function previousStep() {
@@ -187,6 +221,9 @@ function fillMailFields() {
   const input = state.latestInput;
   if (!b || !input) return;
 
+  document.getElementById("web3Name").value = input.clientName;
+  document.getElementById("mailReplyTo").value = input.clientEmail;
+  document.getElementById("mailSubject").value = `Nieuwe projectaanvraag — ${b.projectName}`;
   document.getElementById("mailGoals").value = input.goals.join(", ") || "Niet opgegeven";
   document.getElementById("mailStyles").value = input.styles.join(", ") || "Niet opgegeven";
   document.getElementById("mailFormats").value = input.formats.join(", ") || "Niet opgegeven";
@@ -197,6 +234,87 @@ function fillMailFields() {
   document.getElementById("mailPlanning").value = b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | ");
   document.getElementById("mailDeliverables").value = b.deliverables.join(" | ");
   document.getElementById("mailAttention").value = b.attention;
+  document.getElementById("web3Message").value = buildMailMessage(b, input);
+}
+
+function buildMailMessage(b, input) {
+  return [
+    `Project: ${b.projectName}`,
+    `Klant: ${input.clientName}`,
+    `E-mail: ${input.clientEmail}`,
+    `Contact: ${input.clientContact}`,
+    `Omschrijving: ${input.projectIdea}`,
+    `Doelen: ${input.goals.join(", ") || "Niet opgegeven"}`,
+    `Sfeer: ${input.styles.join(", ") || "Niet opgegeven"}`,
+    `Referenties: ${input.references}`,
+    `Locatie: ${input.location}`,
+    `Opnamedatum: ${input.shootDate}`,
+    `Deadline: ${input.deadline}`,
+    `Budget: ${input.budget}`,
+    `Formaten: ${input.formats.join(", ") || "Niet opgegeven"}`,
+    `Muziek/audio: ${input.music}`,
+    `Extra info: ${input.extraInfo}`,
+    "",
+    `Concept: ${b.concept}`,
+    `Shotlist: ${b.shots.join(" | ")}`,
+    `Equipment: ${b.equipment.join(" | ")}`,
+    `Planning: ${b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | ")}`,
+    `Deliverables: ${b.deliverables.join(" | ")}`,
+    `Aandachtspunten: ${b.attention}`
+  ].join("\n");
+}
+
+function postProjectToSheet() {
+  const b = state.latestBreakdown;
+  const input = state.latestInput;
+  if (!b || !input) return;
+
+  const payload = {
+    action: "create",
+    projectName: b.projectName,
+    clientName: input.clientName,
+    clientEmail: input.clientEmail,
+    clientContact: input.clientContact,
+    projectIdea: input.projectIdea,
+    goals: input.goals.join(", "),
+    styles: input.styles.join(", "),
+    formats: input.formats.join(", "),
+    references: input.references,
+    location: input.location,
+    shootDate: input.shootDate,
+    deadline: input.deadline,
+    music: input.music,
+    budget: input.budget,
+    extraInfo: input.extraInfo,
+    concept: b.concept,
+    shotlist: b.shots.join(" | "),
+    equipment: b.equipment.join(" | "),
+    planning: b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | "),
+    deliverables: b.deliverables.join(" | "),
+    attention: b.attention
+  };
+
+  submitHiddenPost(payload);
+}
+
+function submitHiddenPost(payload) {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = SHEET_WEB_APP_URL;
+  form.target = "sheet-submit-frame";
+  form.style.display = "none";
+
+  Object.entries(payload).forEach(([name, value]) => {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.appendChild(input);
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+  form.remove();
 }
 
 function createProjectName(input) {
@@ -260,45 +378,137 @@ function pills(items, variant = "purple") {
   return `<div class="pill-list">${items.map((item) => `<span class="pill ${variant}">${escapeHtml(item)}</span>`).join("")}</div>`;
 }
 
-function saveProject(breakdown, input) {
-  const project = {
-    id: Date.now(),
-    name: breakdown.projectName,
-    client: input.clientName,
-    deadline: input.deadline,
-    shootDate: input.shootDate,
-    status: "Nieuw"
-  };
+function unlockDashboard() {
+  const input = document.getElementById("dashboardPassword");
+  dashboardPassword = input.value.trim();
 
-  state.projects.unshift(project);
-  localStorage.setItem("ebbenProjects", JSON.stringify(state.projects));
+  if (!dashboardPassword) {
+    document.getElementById("dashboardError").textContent = "Vul een wachtwoord in.";
+    input.focus();
+    return;
+  }
+
+  document.getElementById("dashboardError").textContent = "Dashboard laden...";
+  loadProjectsFromSheet(dashboardPassword).then((payload) => {
+    if (!payload.ok) {
+      document.getElementById("dashboardError").textContent = payload.error || "Dashboard kon niet laden.";
+      return;
+    }
+
+    state.projects = payload.projects || [];
+    document.getElementById("dashboard-lock").classList.add("hidden");
+    document.getElementById("dashboard-content").classList.remove("hidden");
+    renderDashboard();
+  });
+}
+
+function loadProjectsFromSheet(password) {
+  return new Promise((resolve) => {
+    const callbackName = `ochtendstondProjects_${Date.now()}`;
+
+    window[callbackName] = (payload) => {
+      delete window[callbackName];
+      script.remove();
+      resolve(payload);
+    };
+
+    const script = document.createElement("script");
+    script.src = `${SHEET_WEB_APP_URL}?action=list&password=${encodeURIComponent(password)}&callback=${callbackName}`;
+    document.body.appendChild(script);
+  });
 }
 
 function renderDashboard() {
-  document.getElementById("metric-active").textContent = state.projects.length;
+  if (!dashboardPassword) return;
+
+  const activeProjects = state.projects.filter((project) => project.status !== "Afgewerkt");
+  document.getElementById("metric-active").textContent = activeProjects.length;
   document.getElementById("metric-total").textContent = state.projects.length;
-  document.getElementById("metric-next").textContent = state.projects[0]?.shootDate || "—";
+  document.getElementById("metric-next").textContent = activeProjects[0]?.shootDate || "—";
 
   const list = document.getElementById("project-list");
 
   if (!state.projects.length) {
     list.innerHTML = `<p class="muted">Nog geen projecten. Vul eerst de intake in.</p>`;
+    document.getElementById("project-detail").classList.add("hidden");
     return;
   }
 
   list.innerHTML = state.projects.map((project) => `
-    <article class="project-row">
+    <article class="project-row" data-project-id="${escapeHtml(project.id)}">
       <span class="status">${escapeHtml(project.status)}</span>
       <div class="project-info">
-        <strong>${escapeHtml(project.name)}</strong>
-        <span>${escapeHtml(project.client)} · deadline: ${escapeHtml(project.deadline)}</span>
+        <strong>${escapeHtml(project.projectName)}</strong>
+        <span>${escapeHtml(project.clientName)} · deadline: ${escapeHtml(project.deadline)}</span>
       </div>
     </article>
   `).join("");
+
+  list.querySelectorAll(".project-row").forEach((row) => {
+    row.addEventListener("click", () => renderProjectDetail(row.dataset.projectId));
+  });
+
+  renderProjectDetail(state.selectedProjectId || state.projects[0].id);
+}
+
+function renderProjectDetail(projectId) {
+  const project = state.projects.find((item) => item.id === String(projectId));
+  const detail = document.getElementById("project-detail");
+  if (!project) return;
+
+  state.selectedProjectId = project.id;
+  detail.classList.remove("hidden");
+
+  detail.innerHTML = `
+    ${card("ti ti-list-check", "Project checklist", `
+      ${project.checklist.map((item, index) => `
+        <label>
+          <input type="checkbox" data-check-project="${escapeHtml(project.id)}" data-check-index="${index}" ${item.done ? "checked" : ""}>
+          ${escapeHtml(item.label)}
+        </label>
+      `).join("")}
+    `)}
+    ${card("ti ti-id", "Project info", rows([
+      ["Projectnaam", project.projectName],
+      ["Klant", project.clientName],
+      ["E-mail", project.clientEmail],
+      ["Contact", project.clientContact],
+      ["Opnamedatum", project.shootDate],
+      ["Deadline", project.deadline],
+      ["Status", project.status]
+    ]))}
+  `;
+
+  detail.querySelectorAll("[data-check-project]").forEach((checkbox) => {
+    checkbox.addEventListener("change", () => updateChecklist(project.id, Number(checkbox.dataset.checkIndex), checkbox.checked));
+  });
+}
+
+function updateChecklist(projectId, index, done) {
+  const project = state.projects.find((item) => item.id === String(projectId));
+  if (!project) return;
+
+  project.checklist[index].done = done;
+
+  submitHiddenPost({
+    action: "updateChecklist",
+    password: dashboardPassword,
+    id: project.id,
+    checklistJson: JSON.stringify(project.checklist)
+  });
+
+  setTimeout(() => {
+    loadProjectsFromSheet(dashboardPassword).then((payload) => {
+      if (payload.ok) {
+        state.projects = payload.projects || [];
+        renderDashboard();
+      }
+    });
+  }, 900);
 }
 
 function escapeHtml(value) {
-  return value
+  return String(value || "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
