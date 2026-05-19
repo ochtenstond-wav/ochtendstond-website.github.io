@@ -459,6 +459,62 @@ function renderProjectDetail(projectId) {
   state.selectedProjectId = project.id;
   detail.classList.remove("hidden");
 
+  const isDone = project.status === "Afgewerkt";
+
+  detail.innerHTML = `
+    ${card("ti ti-id", "Project info", rows([
+      ["Projectnaam", project.projectName],
+      ["Klant", project.clientName],
+      ["E-mail", project.clientEmail],
+      ["Contact", project.clientContact],
+      ["Opnamedatum", project.shootDate],
+      ["Deadline", project.deadline],
+      ["Status", project.status]
+    ]))}
+
+    <button class="btn btn-primary" type="button" id="completeProjectBtn" ${isDone ? "disabled" : ""}>
+      ${isDone ? "Project afgerond" : "Project afronden"}
+    </button>
+  `;
+
+  const button = document.getElementById("completeProjectBtn");
+  if (button && !isDone) {
+    button.addEventListener("click", () => completeProject(project.id));
+  }
+}
+
+function completeProject(projectId) {
+  const project = state.projects.find((item) => item.id === String(projectId));
+  if (!project) return;
+
+  const completedChecklist = (project.checklist || []).map((item) => ({
+    label: item.label,
+    done: true
+  }));
+
+  submitHiddenPost({
+    action: "updateChecklist",
+    password: dashboardPassword,
+    id: project.id,
+    checklistJson: JSON.stringify(completedChecklist)
+  });
+
+  setTimeout(() => {
+    loadProjectsFromSheet(dashboardPassword).then((payload) => {
+      if (payload.ok) {
+        state.projects = payload.projects || [];
+        renderDashboard();
+      }
+    });
+  }, 900);
+}
+  const project = state.projects.find((item) => item.id === String(projectId));
+  const detail = document.getElementById("project-detail");
+  if (!project) return;
+
+  state.selectedProjectId = project.id;
+  detail.classList.remove("hidden");
+
   detail.innerHTML = `
     ${card("ti ti-list-check", "Project checklist", `
       ${project.checklist.map((item, index) => `
@@ -484,7 +540,63 @@ function renderProjectDetail(projectId) {
   });
 }
 
-function updateChecklist(projectId, index, done) {
+function renderProjectDetail(projectId) {
+  const project = state.projects.find((item) => item.id === String(projectId));
+  const detail = document.getElementById("project-detail");
+  if (!project) return;
+
+  state.selectedProjectId = project.id;
+  detail.classList.remove("hidden");
+
+  const isDone = project.status === "Afgewerkt";
+
+  detail.innerHTML = `
+    ${card("ti ti-id", "Project info", rows([
+      ["Projectnaam", project.projectName],
+      ["Klant", project.clientName],
+      ["E-mail", project.clientEmail],
+      ["Contact", project.clientContact],
+      ["Opnamedatum", project.shootDate],
+      ["Deadline", project.deadline],
+      ["Status", project.status]
+    ]))}
+
+    <button class="btn btn-primary" type="button" id="completeProjectBtn" ${isDone ? "disabled" : ""}>
+      ${isDone ? "Project afgerond" : "Project afronden"}
+    </button>
+  `;
+
+  const button = document.getElementById("completeProjectBtn");
+  if (button && !isDone) {
+    button.addEventListener("click", () => completeProject(project.id));
+  }
+}
+
+function completeProject(projectId) {
+  const project = state.projects.find((item) => item.id === String(projectId));
+  if (!project) return;
+
+  const completedChecklist = (project.checklist || []).map((item) => ({
+    label: item.label,
+    done: true
+  }));
+
+  submitHiddenPost({
+    action: "updateChecklist",
+    password: dashboardPassword,
+    id: project.id,
+    checklistJson: JSON.stringify(completedChecklist)
+  });
+
+  setTimeout(() => {
+    loadProjectsFromSheet(dashboardPassword).then((payload) => {
+      if (payload.ok) {
+        state.projects = payload.projects || [];
+        renderDashboard();
+      }
+    });
+  }, 900);
+}
   const project = state.projects.find((item) => item.id === String(projectId));
   if (!project) return;
 
