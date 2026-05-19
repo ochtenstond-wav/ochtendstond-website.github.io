@@ -288,10 +288,10 @@ function renderDashboard() {
 
   list.innerHTML = state.projects.map((project) => `
     <article class="project-row">
-      <span>${escapeHtml(project.status)}</span>
-      <div>
+      <span class="status">${escapeHtml(project.status)}</span>
+      <div class="project-info">
         <strong>${escapeHtml(project.name)}</strong>
-        <p>${escapeHtml(project.client)} · deadline: ${escapeHtml(project.deadline)}</p>
+        <span>${escapeHtml(project.client)} · deadline: ${escapeHtml(project.deadline)}</span>
       </div>
     </article>
   `).join("");
