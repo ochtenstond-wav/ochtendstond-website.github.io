@@ -663,3 +663,30 @@ textarea {
   content: "✓ ";
   font-weight: 700;
 }
+
+.option.selected {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
+}
+
+.option.selected::before {
+  content: "✓ ";
+  font-weight: 700;
+}
+
+.project-row-active {
+  border-color: var(--accent);
+  background: rgba(139, 125, 255, 0.14);
+}
+
+.project-row-completed {
+  opacity: 0.48;
+  filter: grayscale(1);
+}
+
+.project-row-completed .status {
+  color: #d7d7d7;
+  background: rgba(255, 255, 255, 0.08);
+}
