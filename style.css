@@ -640,3 +640,14 @@ textarea {
   border-radius: 28px;
   padding: clamp(32px, 6vw, 70px);
 }
+.option.selected {
+  color: #ffffff;
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
+}
+
+.option.selected::before {
+  content: "✓ ";
+  font-weight: 700;
+}
