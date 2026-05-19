@@ -35,7 +35,7 @@
 
         <p class="hero-desc">
           Ik ben Ebben, videograaf met een passie voor sterke visuals, sfeer en storytelling.
-          Van events en fashion tot artiesten en social content — ik maak video’s komende uit eigen intresses.
+          Van events en fashion tot artiesten en social content — ik maak video's komende uit eigen intresses.
         </p>
 
         <div class="hero-actions">
@@ -104,9 +104,13 @@
             <span id="step-label">Stap 1 van 4 — Project</span>
           </div>
 
-        <form action="https://api.web3forms.com/submit" method="POST">
+        <form id="client-form" action="https://api.web3forms.com/submit" method="POST">
           <input type="hidden" name="access_key" value="9f2c2885-15f3-461a-8ddc-b96e928f8bb9">
-          <button type="submit">Submit Form</button>
+          <input type="hidden" name="nextUrl" id="nextUrl">
+          <input type="text" name="name" style="display:none">
+          <input type="email" name="email" style="display:none">
+          <textarea name="message" style="display:none"></textarea>
+          
             <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
             <input type="hidden" name="Geselecteerde doelen" id="mailGoals">
             <input type="hidden" name="Geselecteerde sfeer" id="mailStyles">
@@ -284,7 +288,7 @@
 
       <p class="about-text">
         Ik werk vanuit sfeer, timing en gevoel. Niet alleen mooie shots, maar een totaalbeeld:
-        concept, ritme, styling, editing en impact. Mijn focus ligt op video’s voor artiesten,
+        concept, ritme, styling, editing en impact. Mijn focus ligt op video's voor artiesten,
         merken, events, fashion en social content.
       </p>
     </section>
