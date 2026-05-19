@@ -104,12 +104,13 @@
             <span id="step-label">Stap 1 van 4 — Project</span>
           </div>
 
-          <form action="https://api.web3forms.com/submit" method="POST">
-            <input type="hidden" name="access_key" value="9f2c2885-15f3-461a-8ddc-b96e928f8bb9">
-            <input type="hidden" name="_subject" value="Nieuwe projectaanvraag via Ebben Visuals">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="_autoresponse" value="Bedankt voor je aanvraag. Ik heb je projectinfo goed ontvangen en bekijk alles zo snel mogelijk. — Ebben">
-             <input type="hidden" name="_next" id="nextUrl" value="https://ochtenstond-wav.github.io/ochtendstond-website.github.io/Ochtendstond.WAV/thanks.html">
+        <form action="https://api.web3forms.com/submit" method="POST">
+          <input type="hidden" name="access_key" value="9f2c2885-15f3-461a-8ddc-b96e928f8bb9">
+          <input type="text" name="name" required>
+          <input type="email" name="email" required>
+          <textarea name="message" required></textarea>
+          <button type="submit">Submit Form</button>
+          
             <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
             <input type="hidden" name="Geselecteerde doelen" id="mailGoals">
             <input type="hidden" name="Geselecteerde sfeer" id="mailStyles">
