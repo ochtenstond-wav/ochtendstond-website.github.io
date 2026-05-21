@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function makeThanksUrl() {
-  const path = window.location.pathname.replace(/\/[^/]*$/, "/thanks.html");
+  const path = window.location.pathname.replace(/\/[^\/]*$/, "/thanks.html");
   return `${window.location.origin}${path}`;
 }
 
@@ -514,24 +514,4 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
-}
-
-.project-row-active {
-  border-color: var(--accent);
-  background: rgba(139, 125, 255, 0.14);
-}
-
-.project-row-completed {
-  opacity: 0.48;
-  filter: grayscale(1);
-}
-
-.project-row-completed .status {
-  color: #d7d7d7;
-  background: rgba(255, 255, 255, 0.08);
-}
-
-#completeProjectBtn:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
 }

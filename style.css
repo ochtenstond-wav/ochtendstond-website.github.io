@@ -151,6 +151,10 @@ h1 span,
   border-color: var(--accent-2);
 }
 
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
 .btn-secondary {
   color: white;
   background: rgba(255,255,255,0.06);
@@ -158,6 +162,10 @@ h1 span,
 
 .btn-secondary:hover {
   background: rgba(255,255,255,0.12);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
 }
 
 .section {
@@ -252,12 +260,19 @@ h1 span,
   padding: 13px 10px;
   cursor: pointer;
   font-family: inherit;
-  transition: 0.2s;
+  transition: 0.2s ease;
+  font-weight: 500;
+}
+
+.tab:hover {
+  color: var(--text);
+  background: rgba(139, 125, 255, 0.08);
 }
 
 .tab.active {
   color: white;
   background: var(--panel-2);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
 }
 
 .panel {
@@ -336,12 +351,14 @@ select {
   font-size: 14px;
   font-family: inherit;
   outline: none;
+  transition: 0.2s ease;
 }
 
 input:focus,
 textarea:focus,
 select:focus {
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.12);
 }
 
 textarea {
@@ -364,12 +381,25 @@ textarea {
   padding: 13px 10px;
   cursor: pointer;
   font-family: inherit;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.option:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .option.selected {
-  color: white;
+  color: #ffffff;
   background: var(--accent);
   border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
+}
+
+.option.selected::before {
+  content: "✓ ";
+  font-weight: 700;
 }
 
 .form-nav {
@@ -514,6 +544,27 @@ textarea {
   border-radius: 16px;
   padding: 14px;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.project-row:hover {
+  border-color: var(--accent);
+  background: rgba(139, 125, 255, 0.06);
+}
+
+.project-row.active {
+  border-color: var(--accent);
+  background: rgba(139, 125, 255, 0.14);
+}
+
+.project-row-completed {
+  opacity: 0.48;
+  filter: grayscale(1);
+}
+
+.project-row-completed .status {
+  color: #d7d7d7;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .status {
@@ -559,12 +610,23 @@ textarea {
   font-size: clamp(26px, 4vw, 52px);
   letter-spacing: -0.05em;
   border-bottom: 1px solid rgba(255,255,255,0.2);
+  transition: 0.2s ease;
+}
+
+.contact-links a:hover {
+  border-bottom-color: var(--accent);
+  color: var(--accent);
 }
 
 .footer {
   padding: 32px 60px;
   color: var(--soft);
   border-top: 1px solid var(--line);
+}
+
+#completeProjectBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 @media (max-width: 900px) {
@@ -639,54 +701,4 @@ textarea {
   background: rgba(16, 16, 16, 0.9);
   border-radius: 28px;
   padding: clamp(32px, 6vw, 70px);
-}
-.option.selected {
-  color: #ffffff;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
-}
-
-.option.selected::before {
-  content: "✓ ";
-  font-weight: 700;
-}
-
-.option.selected {
-  color: #ffffff;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
-}
-
-.option.selected::before {
-  content: "✓ ";
-  font-weight: 700;
-}
-
-.option.selected {
-  color: #ffffff;
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(139, 125, 255, 0.28);
-}
-
-.option.selected::before {
-  content: "✓ ";
-  font-weight: 700;
-}
-
-.project-row-active {
-  border-color: var(--accent);
-  background: rgba(139, 125, 255, 0.14);
-}
-
-.project-row-completed {
-  opacity: 0.48;
-  filter: grayscale(1);
-}
-
-.project-row-completed .status {
-  color: #d7d7d7;
-  background: rgba(255, 255, 255, 0.08);
 }
