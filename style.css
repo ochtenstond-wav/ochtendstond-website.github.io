@@ -702,3 +702,8 @@ textarea {
   border-radius: 28px;
   padding: clamp(32px, 6vw, 70px);
 }
+
+.about-text {
+  margin-bottom: 1.5rem;
+  line-height: 1.8;
+}
