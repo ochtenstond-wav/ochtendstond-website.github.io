@@ -592,9 +592,9 @@ textarea {
 }
 
 .about-text {
-  max-width: 25px;
+  max-width: 12px;
   color: rgba(255,255,255,0.82);
-  font-size: clamp(12px, 3vw, 36px);
+  font-size: clamp(12px, 3vw, 12px);
   line-height: 1.35;
   letter-spacing: -0.03em;
 }
@@ -607,7 +607,7 @@ textarea {
 
 .contact-links a {
   width: fit-content;
-  font-size: clamp(26px, 4vw, 52px);
+  font-size: clamp(12px, 4vw, 12px);
   letter-spacing: -0.05em;
   border-bottom: 1px solid rgba(255,255,255,0.2);
   transition: 0.2s ease;
