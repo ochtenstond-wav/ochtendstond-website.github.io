@@ -592,9 +592,9 @@ textarea {
 }
 
 .about-text {
-  max-width: 12px;
+  max-width: 75ch;
+  font-size: 17px;
   color: rgba(255,255,255,0.82);
-  font-size: clamp(12px, 2vw, 35px);
   line-height: 1.35;
   letter-spacing: -0.03em;
 }
