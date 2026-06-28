@@ -707,3 +707,8 @@ textarea {
   margin-bottom: 1.5rem;
   line-height: 1.8;
 }
+
+.uitgezoomd {
+  transform: scale(0.8);
+}
+
