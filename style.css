@@ -82,7 +82,7 @@ a {
   padding: 150px 60px 90px;
   background:
     linear-gradient(90deg, rgba(0,0,0,0.88), rgba(0,0,0,0.45)),
-    url('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?q=80&w=1800&auto=format&fit=crop');
+    src="assets/IMG_7054.JPG";
   background-size: cover;
   background-position: center;
 }
