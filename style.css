@@ -161,7 +161,8 @@ h1 span,
 }
 
 .btn-secondary:hover {
-  background: rgba(255,255,255,0.12);
+  background: #8b7dff;
+  border-color: #8b7dff
 }
 
 .btn-secondary:active {
