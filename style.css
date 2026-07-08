@@ -142,8 +142,8 @@ h1 span,
 
 .btn-primary {
   color: white;
-  background: var(--accent);
-  border-color: var(--accent);
+  background: #141412;
+  border-color: #99884f;
 }
 
 .btn-primary:hover {
