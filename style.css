@@ -95,7 +95,7 @@ a {
 .eyebrow {
   font-size: 12px;
   letter-spacing: 3px;
-  color: var(--muted);
+  color: #9a884f;
   margin-bottom: 18px;
   text-transform: uppercase;
 }
@@ -147,8 +147,8 @@ h1 span,
 }
 
 .btn-primary:hover {
-  background: var(--accent-2);
-  border-color: var(--accent-2);
+  background: #99884f;
+  border-color: #99884f;
 }
 
 .btn-primary:active {
@@ -223,7 +223,7 @@ h1 span,
 }
 
 .overlay p {
-  color: var(--accent);
+  color: #9a884f;
   font-size: 12px;
   margin-bottom: 8px;
 }
