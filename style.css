@@ -157,7 +157,8 @@ h1 span,
 
 .btn-secondary {
   color: white;
-  background: rgba(255,255,255,0.06);
+  background: #141412;
+  border-color: #8b7dff;
 }
 
 .btn-secondary:hover {
