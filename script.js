@@ -1,9 +1,5 @@
 console.log("OCHTENDSTOND VISUALS ACTIVE");
 
-// FormSubmit.co endpoint - geen backend nodig, automatisch e-mail
-const EMAIL_SERVICE_URL = "https://formsubmit.co/ajax/ochtendstond@gmail.com";
-const REQUEST_TIMEOUT_MS = 12000;
-
 let dashboardPassword = "";
 let isSubmittingProject = false;
 
@@ -137,11 +133,11 @@ async function submitProjectRequest() {
   if (isSubmittingProject || !validateRequired()) return;
 
   isSubmittingProject = true;
-  setSubmitState(true, "Projectaanvraag verzenden...");
+  setSubmitState(true, "E-mail verzenden...");
 
   try {
     generateBreakdown();
-    await sendEmailViaFormSubmit(buildProjectPayload());
+    await sendEmailViaHiddenForm(buildProjectPayload());
     window.location.href = makeThanksUrl();
   } catch (error) {
     console.error("Verzending mislukt:", error);
@@ -261,38 +257,56 @@ function buildProjectPayload() {
     Equipment: b.equipment.join(" | "),
     Planning: b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | "),
     Deliverables: b.deliverables.join(" | "),
-    Aandachtspunten: b.attention,
-    _captcha: "false"
+    Aandachtspunten: b.attention
   };
 }
 
 /**
- * Stuur e-mail via FormSubmit.co
- * Dit werkt zonder backend - je krijgt automatisch de data in je inbox
+ * Stuur e-mail via hidden HTML form naar FormSubmit.co
+ * Dit is de correcte manier - FormSubmit.co eist een HTML form
  */
-function sendEmailViaFormSubmit(payload) {
+function sendEmailViaHiddenForm(payload) {
   return new Promise((resolve, reject) => {
-    fetch(EMAIL_SERVICE_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      body: JSON.stringify(payload)
-    })
-      .then((response) => {
-        if (response.ok) {
-          console.log("✅ E-mail verzonden via FormSubmit.co");
-          resolve();
-        } else {
-          console.error("❌ FormSubmit error:", response.status);
-          reject(new Error(`HTTP ${response.status}`));
-        }
-      })
-      .catch((error) => {
-        console.error("❌ Network error:", error);
-        reject(error);
-      });
+    const formId = `email-form-${Date.now()}`;
+    const form = document.createElement("form");
+    form.id = formId;
+    form.method = "POST";
+    form.action = "https://formsubmit.co/ochtendstond@gmail.com";
+    form.style.display = "none";
+
+    // Voeg alle velden toe
+    Object.entries(payload).forEach(([key, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = key;
+      input.value = String(value || "");
+      form.appendChild(input);
+    });
+
+    // Voeg redirect toe
+    const redirectInput = document.createElement("input");
+    redirectInput.type = "hidden";
+    redirectInput.name = "_next";
+    redirectInput.value = makeThanksUrl();
+    form.appendChild(redirectInput);
+
+    // Voeg captcha uit
+    const captchaInput = document.createElement("input");
+    captchaInput.type = "hidden";
+    captchaInput.name = "_captcha";
+    captchaInput.value = "false";
+    form.appendChild(captchaInput);
+
+    document.body.appendChild(form);
+
+    // Submit en cleanup
+    setTimeout(() => {
+      form.submit();
+      setTimeout(() => {
+        form.remove();
+        resolve();
+      }, 500);
+    }, 100);
   });
 }
 
