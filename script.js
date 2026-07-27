@@ -1,6 +1,6 @@
 console.log("OCHTENDSTOND VISUALS ACTIVE");
 
-const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec";
+const SHEET_WEB_APP_URL = document.body.dataset.webAppUrl || "https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec";
 const REQUEST_TIMEOUT_MS = 12000;
 
 let dashboardPassword = "";
@@ -37,8 +37,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const group = grid.dataset.group;
 
     grid.querySelectorAll(".option").forEach((button) => {
+      button.setAttribute("aria-pressed", "false");
       button.addEventListener("click", () => {
         button.classList.toggle("selected");
+        button.setAttribute("aria-pressed", button.classList.contains("selected") ? "true" : "false");
         const value = button.textContent.trim();
         const values = state.selected[group];
 
@@ -69,7 +71,11 @@ function makeThanksUrl() {
 
 function openTab(tabId) {
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
-  document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabId));
+  document.querySelectorAll(".tab").forEach((tab) => {
+    const isActive = tab.dataset.tab === tabId;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
   document.getElementById(tabId).classList.add("active");
 
   if (tabId === "dashboard-panel" && dashboardPassword) {
@@ -107,7 +113,7 @@ function handleFormSubmit(event) {
 
 function nextStep() {
   if (isSubmittingProject) return;
-  if (state.step === 0 && !validateRequired()) return;
+  if (!validateCurrentStep()) return;
 
   if (state.step < state.totalSteps - 1) {
     state.step++;
@@ -125,7 +131,7 @@ function previousStep() {
 }
 
 async function submitProjectRequest() {
-  if (isSubmittingProject || !validateRequired()) return;
+  if (isSubmittingProject || !validateRequired() || !validateSelections()) return;
 
   isSubmittingProject = true;
   setSubmitState(true, "Aanvraag verzenden...");
@@ -135,9 +141,9 @@ async function submitProjectRequest() {
     await submitHiddenPost(buildProjectPayload());
     window.location.href = makeThanksUrl();
   } catch (error) {
-    console.error(error);
+    console.error("Projectaanvraag kon niet verzonden worden:", error);
     isSubmittingProject = false;
-    setSubmitState(false, "Verzenden lukte niet. Probeer opnieuw of mail rechtstreeks naar ochtendstond@gmail.com.");
+    setSubmitState(false, getFriendlyError(error));
   }
 }
 
@@ -161,6 +167,47 @@ function validateRequired() {
 
   setText("formStatus", "");
   return true;
+}
+
+function validateCurrentStep() {
+  if (state.step === 0) {
+    return validateRequired() && validateGroup("goals", "Kies minstens een doel voor de video.");
+  }
+
+  if (state.step === 1) {
+    return validateGroup("styles", "Kies minstens een sfeer of stijl.");
+  }
+
+  return true;
+}
+
+function validateSelections() {
+  if (!validateGroup("goals", "Kies minstens een doel voor de video.")) {
+    state.step = 0;
+    renderStep();
+    return false;
+  }
+
+  if (!validateGroup("styles", "Kies minstens een sfeer of stijl.")) {
+    state.step = 1;
+    renderStep();
+    return false;
+  }
+
+  return true;
+}
+
+function validateGroup(group, message) {
+  if (state.selected[group].length) {
+    setText("formStatus", "");
+    return true;
+  }
+
+  setText("formStatus", message);
+  const grid = document.querySelector(`[data-group="${group}"]`);
+  const firstOption = grid?.querySelector(".option");
+  if (firstOption) firstOption.focus();
+  return false;
 }
 
 function getValue(id, fallback = "Niet opgegeven") {
@@ -540,6 +587,20 @@ function setSubmitState(isBusy, message) {
   }
   if (backButton) backButton.disabled = isBusy;
   setText("formStatus", message || "");
+}
+
+function getFriendlyError(error) {
+  const message = String(error?.message || "");
+
+  if (message.includes("duurde te lang")) {
+    return "De verbinding met het aanvraagsysteem duurde te lang. Controleer je internet en probeer opnieuw.";
+  }
+
+  if (!SHEET_WEB_APP_URL || !SHEET_WEB_APP_URL.startsWith("https://script.google.com/")) {
+    return "De website mist een geldige Google Apps Script-link.";
+  }
+
+  return "Verzenden lukte niet. Probeer opnieuw of mail rechtstreeks naar ochtendstond@gmail.com.";
 }
 
 function setText(id, value) {
