@@ -4,13 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Ebben Dassonville - cinematic videograaf voor events, fashion, artiesten en social content." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Ochtendstond.WAV - Cinematic Visuals" />
+  <meta property="og:description" content="Cinematic visuals voor artiesten, creators, events, fashion en social content." />
+  <meta property="og:image" content="https://ochtenstond-wav.github.io/ochtendstond-website.github.io/assets/IMG_7054.JPG" />
+  <meta property="og:url" content="https://ochtenstond-wav.github.io/ochtendstond-website.github.io/" />
+  <link rel="canonical" href="https://ochtenstond-wav.github.io/ochtendstond-website.github.io/" />
   <title>Ebben Dassonville - Visuals</title>
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+  <link rel="preload" as="image" href="assets/IMG_7054.JPG">
   <link rel="stylesheet" href="style.css" />
 </head>
 
-<body>
+<body data-web-app-url="https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec">
   <header class="site-header">
     <a href="#top" class="logo">Ochtendstond.WAV</a>
 
@@ -60,7 +67,7 @@
 
       <div class="projects">
         <article class="project-card">
-          <img src="assets/foto TOM 4 (1).png" alt="Fashion editorial sfeerbeeld" class="uitgezoomd">
+          <img src="assets/foto TOM 4 (1).png" alt="Fashion editorial sfeerbeeld" class="uitgezoomd" loading="lazy" decoding="async">
           <div class="overlay">
             <p>01</p>
             <h3>Fashion Campaign</h3>
@@ -68,7 +75,7 @@
         </article>
 
         <article class="project-card">
-          <img class="music-visual-img" src="assets/Foto 26-04-2026 om 10.15.jpg" alt="Music visual sfeerbeeld">
+          <img class="music-visual-img" src="assets/Foto 26-04-2026 om 10.15.jpg" alt="Music visual sfeerbeeld" loading="lazy" decoding="async">
           <div class="overlay">
             <p>02</p>
             <h3>Music Visual</h3>
@@ -76,7 +83,7 @@
         </article>
 
         <article class="project-card">
-          <img src="assets/Schermafbeelding 2026-06-28 om 13.20.50.png" alt="Concert en event sfeerbeeld">
+          <img src="assets/Schermafbeelding 2026-06-28 om 13.20.50.png" alt="Concert en event sfeerbeeld" loading="lazy" decoding="async">
           <div class="overlay">
             <p>03</p>
             <h3>Live Event</h3>
@@ -96,13 +103,13 @@
       </div>
 
       <div class="system-card">
-        <div class="tab-bar">
-          <button class="tab active" type="button" data-tab="intake-panel"><i class="ti ti-file-text"></i> Intake</button>
-          <button class="tab" type="button" data-tab="breakdown-panel"><i class="ti ti-layout-list"></i> Preview</button>
-          <button class="tab" type="button" data-tab="dashboard-panel"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+        <div class="tab-bar" role="tablist" aria-label="Intake systeem">
+          <button class="tab active" type="button" role="tab" aria-selected="true" aria-controls="intake-panel" id="tab-intake-panel" data-tab="intake-panel"><i class="ti ti-file-text" aria-hidden="true"></i> Intake</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="breakdown-panel" id="tab-breakdown-panel" data-tab="breakdown-panel"><i class="ti ti-layout-list" aria-hidden="true"></i> Preview</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" aria-controls="dashboard-panel" id="tab-dashboard-panel" data-tab="dashboard-panel"><i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard</button>
         </div>
 
-        <div id="intake-panel" class="panel active">
+        <div id="intake-panel" class="panel active" role="tabpanel" aria-labelledby="tab-intake-panel">
           <div class="progress-bar">
             <div class="step-dot active" id="dot-0"></div>
             <div class="step-dot" id="dot-1"></div>
@@ -137,7 +144,7 @@
               </label>
 
               <div class="field-block">
-                <span>Doel van de video</span>
+                <span id="goals-label">Doel van de video</span>
                 <div class="option-grid" data-group="goals">
                   <button type="button" class="option">Short Form Content (max 60 sec)</button>
                   <button type="button" class="option">Advertentie</button>
@@ -157,7 +164,7 @@
               <p>Klik alles aan wat past bij jouw visie.</p>
 
               <div class="field-block">
-                <span>Sfeer</span>
+                <span id="styles-label">Sfeer</span>
                 <div class="option-grid" data-group="styles">
                   <button type="button" class="option">Moody</button>
                   <button type="button" class="option">Luxury</button>
@@ -199,7 +206,7 @@
               <p>Wat verwacht je concreet als eindresultaat?</p>
 
               <div class="field-block">
-                <span>Formaten</span>
+                <span id="formats-label">Formaten</span>
                 <div class="option-grid" data-group="formats">
                   <button type="button" class="option">Verticaal 9:16</button>
                   <button type="button" class="option">Horizontaal 16:9</button>
@@ -229,8 +236,9 @@
                 <textarea id="extraInfo" name="Extra informatie" placeholder="Wensen, vragen, speciale planning, branding assets..."></textarea>
               </label>
 
-              <p id="formStatus" class="muted form-status" role="status" aria-live="polite"></p>
             </div>
+
+            <p id="formStatus" class="muted form-status" role="status" aria-live="polite"></p>
 
             <div class="form-nav">
               <button class="btn btn-secondary" type="button" id="backBtn">Vorige</button>
@@ -239,9 +247,9 @@
           </form>
         </div>
 
-        <div id="breakdown-panel" class="panel">
+        <div id="breakdown-panel" class="panel" role="tabpanel" aria-labelledby="tab-breakdown-panel">
           <div id="empty-breakdown" class="empty-state">
-            <i class="ti ti-file-analytics"></i>
+            <i class="ti ti-file-analytics" aria-hidden="true"></i>
             <p>Vul eerst de intake in om de mail-preview en production breakdown te genereren.</p>
             <button class="btn btn-primary" type="button" data-open-tab="intake-panel">Formulier invullen</button>
           </div>
@@ -249,9 +257,9 @@
           <div id="breakdown-output" class="breakdown-output hidden"></div>
         </div>
 
-        <div id="dashboard-panel" class="panel">
+        <div id="dashboard-panel" class="panel" role="tabpanel" aria-labelledby="tab-dashboard-panel">
           <div id="dashboard-lock" class="empty-state">
-            <i class="ti ti-lock"></i>
+            <i class="ti ti-lock" aria-hidden="true"></i>
             <p>Vul het host-wachtwoord in om lopende projecten te bekijken.</p>
             <label>
               Dashboard wachtwoord
