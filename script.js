@@ -1,9 +1,10 @@
-console.log("EBBEN VISUALS ACTIVE");
+console.log("OCHTENDSTOND VISUALS ACTIVE");
 
 const SHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec";
+const REQUEST_TIMEOUT_MS = 12000;
 
 let dashboardPassword = "";
-let isSubmittingToWeb3Forms = false;
+let isSubmittingProject = false;
 
 const state = {
   step: 0,
@@ -22,8 +23,7 @@ const state = {
 const stepNames = ["Project", "Stijl", "Locatie & timing", "Deliverables"];
 
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("year").textContent = new Date().getFullYear();
-  document.getElementById("redirectUrl").value = makeThanksUrl();
+  setText("year", new Date().getFullYear());
 
   document.querySelectorAll(".tab").forEach((button) => {
     button.addEventListener("click", () => openTab(button.dataset.tab));
@@ -40,10 +40,10 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener("click", () => {
         button.classList.toggle("selected");
         const value = button.textContent.trim();
-        const arr = state.selected[group];
+        const values = state.selected[group];
 
-        if (arr.includes(value)) {
-          state.selected[group] = arr.filter((item) => item !== value);
+        if (values.includes(value)) {
+          state.selected[group] = values.filter((item) => item !== value);
         } else {
           state.selected[group].push(value);
         }
@@ -60,11 +60,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   renderStep();
-  renderDashboard();
 });
 
 function makeThanksUrl() {
-  const path = window.location.pathname.replace(/\/[^\/]*$/, "/thanks.html");
+  const path = window.location.pathname.replace(/\/[^/]*$/, "/thanks.html");
   return `${window.location.origin}${path}`;
 }
 
@@ -73,7 +72,7 @@ function openTab(tabId) {
   document.querySelectorAll(".tab").forEach((tab) => tab.classList.toggle("active", tab.dataset.tab === tabId));
   document.getElementById(tabId).classList.add("active");
 
-  if (tabId === "dashboard-panel") {
+  if (tabId === "dashboard-panel" && dashboardPassword) {
     renderDashboard();
   }
 }
@@ -90,16 +89,12 @@ function renderStep() {
     if (i === state.step) dot.classList.add("active");
   }
 
-  document.getElementById("step-label").textContent =
-    `Stap ${state.step + 1} van ${state.totalSteps} — ${stepNames[state.step]}`;
-
+  setText("step-label", `Stap ${state.step + 1} van ${state.totalSteps} - ${stepNames[state.step]}`);
   document.getElementById("backBtn").style.visibility = state.step === 0 ? "hidden" : "visible";
-  document.getElementById("nextBtn").textContent =
-    state.step === state.totalSteps - 1 ? "Verzend projectaanvraag →" : "Volgende →";
+  setText("nextBtn", state.step === state.totalSteps - 1 ? "Verzend projectaanvraag" : "Volgende");
 }
 
 function handleFormSubmit(event) {
-  if (isSubmittingToWeb3Forms) return;
   event.preventDefault();
 
   if (state.step < state.totalSteps - 1) {
@@ -111,7 +106,8 @@ function handleFormSubmit(event) {
 }
 
 function nextStep() {
-  if (state.step === 0 && !validateRequired(["clientName", "clientEmail", "projectIdea"])) return;
+  if (isSubmittingProject) return;
+  if (state.step === 0 && !validateRequired()) return;
 
   if (state.step < state.totalSteps - 1) {
     state.step++;
@@ -122,32 +118,48 @@ function nextStep() {
   submitProjectRequest();
 }
 
-function submitProjectRequest() {
-  generateBreakdown();
-  fillMailFields();
-  postProjectToSheet();
-
-  setTimeout(() => {
-    isSubmittingToWeb3Forms = true;
-    document.getElementById("client-form").submit();
-  }, 700);
+function previousStep() {
+  if (isSubmittingProject || state.step === 0) return;
+  state.step--;
+  renderStep();
 }
 
-function previousStep() {
-  if (state.step > 0) {
-    state.step--;
-    renderStep();
+async function submitProjectRequest() {
+  if (isSubmittingProject || !validateRequired()) return;
+
+  isSubmittingProject = true;
+  setSubmitState(true, "Aanvraag verzenden...");
+
+  try {
+    generateBreakdown();
+    await submitHiddenPost(buildProjectPayload());
+    window.location.href = makeThanksUrl();
+  } catch (error) {
+    console.error(error);
+    isSubmittingProject = false;
+    setSubmitState(false, "Verzenden lukte niet. Probeer opnieuw of mail rechtstreeks naar ochtendstond@gmail.com.");
   }
 }
 
-function validateRequired(ids) {
-  for (const id of ids) {
+function validateRequired() {
+  const requiredIds = ["clientName", "clientEmail", "projectIdea"];
+
+  for (const id of requiredIds) {
     const el = document.getElementById(id);
     if (!el.value.trim()) {
       el.focus();
+      setText("formStatus", "Vul naam, e-mailadres en projectomschrijving in.");
+      return false;
+    }
+
+    if (el.type === "email" && !el.checkValidity()) {
+      el.focus();
+      setText("formStatus", "Vul een geldig e-mailadres in.");
       return false;
     }
   }
+
+  setText("formStatus", "");
   return true;
 }
 
@@ -161,7 +173,7 @@ function generateBreakdown() {
   const input = {
     clientName: getValue("clientName", "Nieuwe klant"),
     clientEmail: getValue("clientEmail", "Geen e-mail opgegeven"),
-    clientContact: getValue("clientContact", "Niet opgegeven"),
+    clientContact: getValue("clientContact"),
     projectIdea: getValue("projectIdea", "Cinematic social video"),
     references: getValue("references", "Geen referenties opgegeven"),
     location: getValue("location", "Locatie nog te bepalen"),
@@ -180,7 +192,7 @@ function generateBreakdown() {
   const mainFormat = input.formats[0] || "verticale en horizontale export";
 
   const breakdown = {
-    projectName: createProjectName(input),
+    projectName: `${input.clientName} - ${input.goals[0] || "Video"}`,
     client: input.clientName,
     concept: `Een ${mainStyle.toLowerCase()} video gericht op ${mainGoal.toLowerCase()}, met focus op sfeer, ritme, details en een duidelijke visuele identiteit.`,
     mood: input.styles.length ? input.styles.join(", ") : "Cinematic, modern, clean",
@@ -208,68 +220,19 @@ function generateBreakdown() {
     attention: `Controleer vooraf locatie, timing, toestemming, muziekkeuze, budget en eventuele branding assets. Deadline: ${input.deadline}.`
   };
 
-  state.latestBreakdown = breakdown;
   state.latestInput = input;
+  state.latestBreakdown = breakdown;
   renderBreakdown(breakdown, input);
 
   document.getElementById("empty-breakdown").classList.add("hidden");
   document.getElementById("breakdown-output").classList.remove("hidden");
 }
 
-function fillMailFields() {
+function buildProjectPayload() {
   const b = state.latestBreakdown;
   const input = state.latestInput;
-  if (!b || !input) return;
 
-  document.getElementById("web3Name").value = input.clientName;
-  document.getElementById("mailReplyTo").value = input.clientEmail;
-  document.getElementById("mailSubject").value = `Nieuwe projectaanvraag — ${b.projectName}`;
-  document.getElementById("mailGoals").value = input.goals.join(", ") || "Niet opgegeven";
-  document.getElementById("mailStyles").value = input.styles.join(", ") || "Niet opgegeven";
-  document.getElementById("mailFormats").value = input.formats.join(", ") || "Niet opgegeven";
-  document.getElementById("mailProjectName").value = b.projectName;
-  document.getElementById("mailConcept").value = b.concept;
-  document.getElementById("mailShotlist").value = b.shots.join(" | ");
-  document.getElementById("mailEquipment").value = b.equipment.join(" | ");
-  document.getElementById("mailPlanning").value = b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | ");
-  document.getElementById("mailDeliverables").value = b.deliverables.join(" | ");
-  document.getElementById("mailAttention").value = b.attention;
-  document.getElementById("web3Message").value = buildMailMessage(b, input);
-}
-
-function buildMailMessage(b, input) {
-  return [
-    `Project: ${b.projectName}`,
-    `Klant: ${input.clientName}`,
-    `E-mail: ${input.clientEmail}`,
-    `Contact: ${input.clientContact}`,
-    `Omschrijving: ${input.projectIdea}`,
-    `Doelen: ${input.goals.join(", ") || "Niet opgegeven"}`,
-    `Sfeer: ${input.styles.join(", ") || "Niet opgegeven"}`,
-    `Referenties: ${input.references}`,
-    `Locatie: ${input.location}`,
-    `Opnamedatum: ${input.shootDate}`,
-    `Deadline: ${input.deadline}`,
-    `Budget: ${input.budget}`,
-    `Formaten: ${input.formats.join(", ") || "Niet opgegeven"}`,
-    `Muziek/audio: ${input.music}`,
-    `Extra info: ${input.extraInfo}`,
-    "",
-    `Concept: ${b.concept}`,
-    `Shotlist: ${b.shots.join(" | ")}`,
-    `Equipment: ${b.equipment.join(" | ")}`,
-    `Planning: ${b.planning.map((p) => `${p.phase}: ${p.action}`).join(" | ")}`,
-    `Deliverables: ${b.deliverables.join(" | ")}`,
-    `Aandachtspunten: ${b.attention}`
-  ].join("\n");
-}
-
-function postProjectToSheet() {
-  const b = state.latestBreakdown;
-  const input = state.latestInput;
-  if (!b || !input) return;
-
-  const payload = {
+  return {
     action: "create",
     projectName: b.projectName,
     clientName: input.clientName,
@@ -293,33 +256,55 @@ function postProjectToSheet() {
     deliverables: b.deliverables.join(" | "),
     attention: b.attention
   };
-
-  submitHiddenPost(payload);
 }
 
 function submitHiddenPost(payload) {
-  const form = document.createElement("form");
-  form.method = "POST";
-  form.action = SHEET_WEB_APP_URL;
-  form.target = "sheet-submit-frame";
-  form.style.display = "none";
+  return new Promise((resolve, reject) => {
+    const iframeName = `sheet-submit-frame-${Date.now()}`;
+    const iframe = document.createElement("iframe");
+    const form = document.createElement("form");
+    let settled = false;
 
-  Object.entries(payload).forEach(([name, value]) => {
-    const input = document.createElement("input");
-    input.type = "hidden";
-    input.name = name;
-    input.value = value;
-    form.appendChild(input);
+    const cleanup = () => {
+      form.remove();
+      iframe.remove();
+    };
+
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error("Verzenden duurde te lang."));
+    }, REQUEST_TIMEOUT_MS);
+
+    iframe.name = iframeName;
+    iframe.className = "hidden";
+    iframe.title = "Project database submission";
+    iframe.addEventListener("load", () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      cleanup();
+      resolve();
+    });
+
+    form.method = "POST";
+    form.action = SHEET_WEB_APP_URL;
+    form.target = iframeName;
+    form.style.display = "none";
+
+    Object.entries(payload).forEach(([name, value]) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value || "";
+      form.appendChild(input);
+    });
+
+    document.body.appendChild(iframe);
+    document.body.appendChild(form);
+    form.submit();
   });
-
-  document.body.appendChild(form);
-  form.submit();
-  form.remove();
-}
-
-function createProjectName(input) {
-  const type = input.goals[0] || "Video";
-  return `${input.clientName} — ${type}`;
 }
 
 function renderBreakdown(data, input) {
@@ -337,14 +322,12 @@ function renderBreakdown(data, input) {
       ["Deadline", input.deadline],
       ["Budget", input.budget]
     ]))}
-
     ${card("ti ti-bulb", "Concept & sfeer", rows([
       ["Projectomschrijving", input.projectIdea],
       ["Concept", data.concept],
       ["Sfeer", data.mood],
       ["Referenties", input.references]
     ]))}
-
     ${card("ti ti-camera", "Shotlist", pills(data.shots))}
     ${card("ti ti-device-camera-video", "Equipment", pills(data.equipment, "green"))}
     ${card("ti ti-calendar", "Planning", rows(data.planning.map((item) => [item.phase, item.action])))}
@@ -353,93 +336,92 @@ function renderBreakdown(data, input) {
   `;
 }
 
-function card(icon, title, body) {
-  return `
-    <article class="breakdown-card">
-      <div class="breakdown-header">
-        <i class="${icon}"></i>
-        <h3>${title}</h3>
-      </div>
-      <div class="breakdown-body">${body}</div>
-    </article>
-  `;
-}
-
-function rows(items) {
-  return items.map(([key, value]) => `
-    <div class="breakdown-row">
-      <span>${escapeHtml(key)}</span>
-      <strong>${escapeHtml(String(value))}</strong>
-    </div>
-  `).join("");
-}
-
-function pills(items, variant = "purple") {
-  return `<div class="pill-list">${items.map((item) => `<span class="pill ${variant}">${escapeHtml(item)}</span>`).join("")}</div>`;
-}
-
 function unlockDashboard() {
   const input = document.getElementById("dashboardPassword");
   dashboardPassword = input.value.trim();
 
   if (!dashboardPassword) {
-    document.getElementById("dashboardError").textContent = "Vul een wachtwoord in.";
+    setText("dashboardError", "Vul een wachtwoord in.");
     input.focus();
     return;
   }
 
-  document.getElementById("dashboardError").textContent = "Dashboard laden...";
-  loadProjectsFromSheet(dashboardPassword).then((payload) => {
-    if (!payload.ok) {
-      document.getElementById("dashboardError").textContent = payload.error || "Dashboard kon niet laden.";
-      return;
-    }
+  setText("dashboardError", "Dashboard laden...");
+  loadProjectsFromSheet(dashboardPassword)
+    .then((payload) => {
+      if (!payload.ok) {
+        setText("dashboardError", payload.error || "Dashboard kon niet laden.");
+        return;
+      }
 
-    state.projects = payload.projects || [];
-    document.getElementById("dashboard-lock").classList.add("hidden");
-    document.getElementById("dashboard-content").classList.remove("hidden");
-    renderDashboard();
-  });
+      state.projects = payload.projects || [];
+      document.getElementById("dashboard-lock").classList.add("hidden");
+      document.getElementById("dashboard-content").classList.remove("hidden");
+      renderDashboard();
+    })
+    .catch(() => setText("dashboardError", "Dashboard kon niet laden. Controleer je Apps Script-deployment."));
 }
 
 function loadProjectsFromSheet(password) {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     const callbackName = `ochtendstondProjects_${Date.now()}`;
+    const script = document.createElement("script");
+    let settled = false;
 
-    window[callbackName] = (payload) => {
+    const cleanup = () => {
       delete window[callbackName];
       script.remove();
+    };
+
+    const timer = window.setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error("Dashboard laden duurde te lang."));
+    }, REQUEST_TIMEOUT_MS);
+
+    window[callbackName] = (payload) => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      cleanup();
       resolve(payload);
     };
 
-    const script = document.createElement("script");
+    script.onerror = () => {
+      if (settled) return;
+      settled = true;
+      window.clearTimeout(timer);
+      cleanup();
+      reject(new Error("Dashboard-script kon niet laden."));
+    };
+
     script.src = `${SHEET_WEB_APP_URL}?action=list&password=${encodeURIComponent(password)}&callback=${callbackName}`;
     document.body.appendChild(script);
   });
 }
 
 function renderDashboard() {
-  if (!dashboardPassword) return;
-
   const activeProjects = state.projects.filter((project) => project.status !== "Afgewerkt");
-  document.getElementById("metric-active").textContent = activeProjects.length;
-  document.getElementById("metric-total").textContent = state.projects.length;
-  document.getElementById("metric-next").textContent = activeProjects[0]?.shootDate || "—";
+  setText("metric-active", activeProjects.length);
+  setText("metric-total", state.projects.length);
+  setText("metric-next", activeProjects[0]?.shootDate || "-");
 
   const list = document.getElementById("project-list");
+  const detail = document.getElementById("project-detail");
 
   if (!state.projects.length) {
     list.innerHTML = `<p class="muted">Nog geen projecten. Vul eerst de intake in.</p>`;
-    document.getElementById("project-detail").classList.add("hidden");
+    detail.classList.add("hidden");
     return;
   }
 
   list.innerHTML = state.projects.map((project) => `
-    <article class="project-row" data-project-id="${escapeHtml(project.id)}">
+    <article class="project-row ${project.status === "Afgewerkt" ? "project-row-completed" : ""}" data-project-id="${escapeHtml(project.id)}">
       <span class="status">${escapeHtml(project.status)}</span>
       <div class="project-info">
         <strong>${escapeHtml(project.projectName)}</strong>
-        <span>${escapeHtml(project.clientName)} · deadline: ${escapeHtml(project.deadline)}</span>
+        <span>${escapeHtml(project.clientName)} - deadline: ${escapeHtml(project.deadline)}</span>
       </div>
     </article>
   `).join("");
@@ -458,8 +440,8 @@ function renderProjectDetail(projectId) {
 
   state.selectedProjectId = project.id;
   detail.classList.remove("hidden");
-  const isDone = project.status === "Afgewerkt";
 
+  const isDone = project.status === "Afgewerkt";
   detail.innerHTML = `
     ${card("ti ti-id", "Project info", rows([
       ["Projectnaam", project.projectName],
@@ -483,7 +465,13 @@ function renderProjectDetail(projectId) {
 
 function completeProject(projectId) {
   const project = state.projects.find((item) => item.id === String(projectId));
+  const button = document.getElementById("completeProjectBtn");
   if (!project) return;
+
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Afronden...";
+  }
 
   const completedChecklist = (project.checklist || []).map((item) => ({
     label: item.label,
@@ -495,16 +483,65 @@ function completeProject(projectId) {
     password: dashboardPassword,
     id: project.id,
     checklistJson: JSON.stringify(completedChecklist)
-  });
-
-  setTimeout(() => {
-    loadProjectsFromSheet(dashboardPassword).then((payload) => {
+  })
+    .then(() => loadProjectsFromSheet(dashboardPassword))
+    .then((payload) => {
       if (payload.ok) {
         state.projects = payload.projects || [];
         renderDashboard();
       }
+    })
+    .catch(() => {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "Project afronden";
+      }
     });
-  }, 900);
+}
+
+function card(icon, title, body) {
+  return `
+    <article class="breakdown-card">
+      <div class="breakdown-header">
+        <i class="${icon}"></i>
+        <h3>${escapeHtml(title)}</h3>
+      </div>
+      <div class="breakdown-body">${body}</div>
+    </article>
+  `;
+}
+
+function rows(items) {
+  return items.map(([key, value]) => `
+    <div class="breakdown-row">
+      <span>${escapeHtml(key)}</span>
+      <strong>${escapeHtml(String(value))}</strong>
+    </div>
+  `).join("");
+}
+
+function pills(items, variant = "purple") {
+  return `<div class="pill-list">${items.map((item) => `<span class="pill ${variant}">${escapeHtml(item)}</span>`).join("")}</div>`;
+}
+
+function setSubmitState(isBusy, message) {
+  const submitButton = document.getElementById("submitProjectBtn");
+  const nextButton = document.getElementById("nextBtn");
+  const backButton = document.getElementById("backBtn");
+
+  if (submitButton) {
+    submitButton.disabled = isBusy;
+    submitButton.textContent = isBusy ? "Verzenden..." : "Projectaanvraag verzenden";
+  }
+
+  if (nextButton) nextButton.disabled = isBusy;
+  if (backButton) backButton.disabled = isBusy;
+  setText("formStatus", message || "");
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
 }
 
 function escapeHtml(value) {
