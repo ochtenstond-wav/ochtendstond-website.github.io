@@ -1,6 +1,6 @@
 console.log("OCHTENDSTOND VISUALS ACTIVE");
 
-const SHEET_WEB_APP_URL = document.body.dataset.webAppUrl || "https://script.google.com/macros/s/AKfycby7mgIi9c5SYGJV10z1ixNDh87Q_-Te4Ua0TnD5AAR8aXWYus8ktFYtynhPVs1CZ0Y-lA/exec";
+const SHEET_WEB_APP_URL = document.body.dataset.webAppUrl || "https://script.google.com/macros/s/AKfycbzLbycL-A6nz-YAASXNSmbKkDYXyIheULGhSSXOK90BV1Yz51OiFy1w2h7F3xZlA-pELA/exec";
 const REQUEST_TIMEOUT_MS = 12000;
 
 let dashboardPassword = "";
