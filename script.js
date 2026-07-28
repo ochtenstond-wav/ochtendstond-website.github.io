@@ -1,7 +1,7 @@
 console.log("OCHTENDSTOND VISUALS ACTIVE");
 
 const SHEET_WEB_APP_URL = document.body.dataset.webAppUrl || "https://script.google.com/macros/s/AKfycbzLbycL-A6nz-YAASXNSmbKkDYXyIheULGhSSXOK90BV1Yz51OiFy1w2h7F3xZlA-pELA/exec";
-const REQUEST_TIMEOUT_MS = 12000;
+const REQUEST_TIMEOUT_MS = 30000;
 
 let dashboardPassword = "";
 let isSubmittingProject = false;
