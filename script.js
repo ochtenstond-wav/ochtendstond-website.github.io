@@ -136,15 +136,12 @@ async function submitProjectRequest() {
   isSubmittingProject = true;
   setSubmitState(true, "Aanvraag verzenden...");
 
-  try {
-    generateBreakdown();
-    await submitHiddenPost(buildProjectPayload());
+  generateBreakdown();
+  submitHiddenPost(buildProjectPayload());
+
+  window.setTimeout(() => {
     window.location.href = makeThanksUrl();
-  } catch (error) {
-    console.error("Projectaanvraag kon niet verzonden worden:", error);
-    isSubmittingProject = false;
-    setSubmitState(false, getFriendlyError(error));
-  }
+  }, 1800);
 }
 
 function validateRequired() {
