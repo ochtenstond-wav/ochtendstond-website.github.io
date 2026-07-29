@@ -137,7 +137,9 @@ async function submitProjectRequest() {
   setSubmitState(true, "Aanvraag verzenden...");
 
   generateBreakdown();
-  submitHiddenPost(buildProjectPayload());
+  submitHiddenPost(buildProjectPayload()).catch((error) => {
+    console.error("Projectaanvraag kon niet bevestigd worden door de browser:", error);
+  });
 
   window.setTimeout(() => {
     window.location.href = makeThanksUrl();
