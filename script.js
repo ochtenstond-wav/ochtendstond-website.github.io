@@ -137,13 +137,42 @@ async function submitProjectRequest() {
   setSubmitState(true, "Aanvraag verzenden...");
 
   generateBreakdown();
-  submitHiddenPost(buildProjectPayload()).catch((error) => {
-    console.error("Projectaanvraag kon niet bevestigd worden door de browser:", error);
+
+  try {
+    postProjectNoCors(buildProjectPayload());
+    window.setTimeout(() => {
+      redirectToThanks();
+    }, 1200);
+  } catch (error) {
+    console.error("Projectaanvraag kon niet verzonden worden:", error);
+    isSubmittingProject = false;
+    setSubmitState(false, getFriendlyError(error));
+  }
+}
+
+function postProjectNoCors(payload) {
+  const body = new URLSearchParams();
+
+  Object.entries(payload).forEach(([name, value]) => {
+    body.append(name, value || "");
   });
 
-  window.setTimeout(() => {
+  fetch(SHEET_WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    keepalive: true,
+    body
+  }).catch((error) => {
+    console.error("Achtergrondverzending kon niet bevestigd worden:", error);
+  });
+}
+
+function redirectToThanks() {
+  try {
     window.location.href = makeThanksUrl();
-  }, 1800);
+  } catch (error) {
+    window.location.href = "thanks.html";
+  }
 }
 
 function validateRequired() {
