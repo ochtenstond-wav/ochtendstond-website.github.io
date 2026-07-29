@@ -33,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
     button.addEventListener("click", () => openTab(button.dataset.openTab));
   });
 
+  initPackageExplorer();
+
   document.querySelectorAll(".option-grid").forEach((grid) => {
     const group = grid.dataset.group;
 
@@ -63,6 +65,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderStep();
 });
+
+function initPackageExplorer() {
+  const options = document.querySelectorAll(".package-option");
+  const details = document.querySelectorAll(".package-detail");
+
+  options.forEach((button) => {
+    button.addEventListener("click", () => {
+      const selectedPackage = button.dataset.package;
+
+      options.forEach((option) => {
+        const isActive = option.dataset.package === selectedPackage;
+        option.classList.toggle("active", isActive);
+        option.setAttribute("aria-selected", isActive ? "true" : "false");
+      });
+
+      details.forEach((detail) => {
+        detail.classList.toggle("active", detail.dataset.packageDetail === selectedPackage);
+      });
+    });
+  });
+}
 
 function makeThanksUrl() {
   const path = window.location.pathname.replace(/\/[^/]*$/, "/thanks.html");
