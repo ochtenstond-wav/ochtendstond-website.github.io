@@ -22,7 +22,7 @@ const state = {
 
 const stepNames = ["Project", "Stijl", "Locatie & timing", "Deliverables"];
 
-document.addEventListener("DOMContentLoaded", () => {
+function initSite() {
   setText("year", new Date().getFullYear());
 
   document.querySelectorAll(".tab").forEach((button) => {
@@ -55,16 +55,22 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  document.getElementById("backBtn").addEventListener("click", previousStep);
-  document.getElementById("nextBtn").addEventListener("click", nextStep);
-  document.getElementById("client-form").addEventListener("submit", handleFormSubmit);
-  document.getElementById("unlockDashboard").addEventListener("click", unlockDashboard);
-  document.getElementById("dashboardPassword").addEventListener("keydown", (event) => {
+  document.getElementById("backBtn")?.addEventListener("click", previousStep);
+  document.getElementById("nextBtn")?.addEventListener("click", nextStep);
+  document.getElementById("client-form")?.addEventListener("submit", handleFormSubmit);
+  document.getElementById("unlockDashboard")?.addEventListener("click", unlockDashboard);
+  document.getElementById("dashboardPassword")?.addEventListener("keydown", (event) => {
     if (event.key === "Enter") unlockDashboard();
   });
 
   renderStep();
-});
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initSite);
+} else {
+  initSite();
+}
 
 function initPackageExplorer() {
   const options = document.querySelectorAll(".package-option");
