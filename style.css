@@ -3757,3 +3757,13 @@ button:disabled {
     display: grid;
   }
 }
+.screenplay-site #intake {
+  aspect-ratio: auto;
+  height: auto;
+  min-height: clamp(980px, 118vw, 1320px);
+  overflow: visible;
+}
+
+.screenplay-site #intake .system-card {
+  height: auto;
+}
