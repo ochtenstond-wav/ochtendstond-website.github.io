@@ -695,7 +695,7 @@ h1 span,
 
 .step-dot.active {
   width: 34px;
-  background: var(--accent);
+  background: var(--black);
 }
 
 #step-label {
